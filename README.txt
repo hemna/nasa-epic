@@ -1,7 +1,7 @@
 This isn't a python package yet.   Just run the script manually.
 
 requirements:
-pip install pillow requests
+pip install pillow requests clint
 
 run this?
 python nasa_epic/nasaepic.py
