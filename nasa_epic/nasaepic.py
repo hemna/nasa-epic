@@ -52,6 +52,26 @@ class NasaEpic(object):
         i = Image.open(StringIO(r.content))
         i.save(file)
 
+    def getImageProgress(self, url, name, folder):
+        file = self.createFilename(url, name, folder)
+        r = requests.get(url, stream=True)
+        total_length = r.headers.get('content-length')
+
+        if total_length is None: # no content length header
+            with open(file, 'wb') as f:
+                for chunk in r.iter_content(1024):
+                    f.write(chunk)
+        else:
+            with open(file, 'wb') as f:
+                dl = 0
+                total_length = int(total_length)
+                for data in r.iter_content():
+                    dl += len(data)
+                    f.write(data)
+                    done = int(50 * dl / total_length)
+                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)) )    
+                    sys.stdout.flush()
+
     def ensureDir(self, dir):
         try:
             os.makedirs(dir)
@@ -73,7 +93,8 @@ class NasaEpic(object):
             full_path = os.path.realpath(dir + "/" + image_name)
             if not os.path.exists(full_path):
                 image_url = self.image_url + image_name
-                self.getImageFast(image_url, name=image_name, folder=dir)
+                #self.getImageFast(image_url, name=image_name, folder=dir)
+                self.getImageProgress(image_url, name=image_name, folder=dir)
             else:
                 print("%s already exists" % image_name)
 
